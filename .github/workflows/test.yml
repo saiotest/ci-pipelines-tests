@@ -1,0 +1,46 @@
+name: Pipe Test🧪
+run-name: ${{github.actor}}👨🏻‍🔬 run Pipeline in ${{github.ref_name}}
+
+on:
+  push:
+    branches:
+    - QA
+
+jobs:
+  RegressionTests:
+    name: regression
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ['chrome', 'firefox', 'edge'] #? Runs tests in 3 different browsers
+
+    steps:
+
+    - name: 📦️ Set testExecKey for Jira XRay
+      id: setTestExecKey
+      run: |
+        if [[ "${{ matrix.browser }}" == "chrome" ]]; then
+          echo "TXID=GX3-1526" >> $GITHUB_OUTPUT
+        elif [[ "${{ matrix.browser }}" == "firefox" ]]; then
+          echo "TXID=GX3-1527" >> $GITHUB_OUTPUT
+        elif [[ "${{ matrix.browser }}" == "edge" ]]; then
+          echo "TXID=GX3-1528" >> $GITHUB_OUTPUT
+        fi
+    - name: 📦️ Use testExecKey is $TXID
+      run: echo "The testExecKey is $TXID"
+      env:
+        TXID: ${{ steps.setTestExecKey.outputs.TXID }}
+
+    - name: 🧪Cypress E2E Regression Test on $TXID
+      uses: cypress-io/github-action@v4
+      with:
+        browser: ${{ matrix.browser }}
+        command: | #!NO EDITAR. Es para correr todas las pruebas del Repo.
+          echo "Running Cypress E2E Regression Test on $TXID"
+      env:
+        TXID: ${{ steps.setTestExecKey.outputs.TXID }}
+
+
+
